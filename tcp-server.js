@@ -3,57 +3,35 @@ const parseRequest = require('./parseRequest')
 const Request = require('./request.js')
 const Response = require('./response.js')
 
-class Server {
-	constructor(port, address) {
-		this.port =  port,
-		this.address = address,
-		this.clients = []
-	}
-	start(callback) {
-		net.createServer((socket) => {
-			console.log('New client connection made')
-			console.log(socket.remoteAddress+':'+socket.remotePort)
-			var request = new Request()
-			var reqBody = []
-			handleDataEvent(socket, reqBody)
-			handleEndEvent(socket, reqBody, request)
-			handleCloseEvent(socket)
-			// socket.on('error', () => {})
-		}).listen(this.port, () => {
-			console.log('Listening on port: '+ this.port)
-		})
-		// server.on('error', (err) => {
-		// 	console.log(err.message)
-		// 	throw err
-		// })
-	}	
-		
-}
+const port =  9000
 
-function handleDataEvent(socket, body) {
+var server = net.createServer((socket) => {
+	console.log('New client connection made')
+	console.log(socket.remoteAddress+':'+socket.remotePort)
+	var request = new Request()
+	var reqBody = [], i = 0
 	socket.setEncoding('utf-8')
-	var i = 0
 	socket.on('data', (data) => {
-		body.push(data)
+		reqBody.push(data)
 		i++
-		console.log(body, i)
-		if(body[i-2] === '\r\n' && body[i-1] === '\r\n') {
+		if(reqBody[i-2] === '\r\n' && reqBody[i-1] === '\r\n') {
 			socket.end()
 			console.log('FIN!')
 		}
+		console.log('Data so far...'+reqBody)
 	})
-}
-
-function handleEndEvent(socket, body, request) {
 	socket.on('end', () => {
-		console.log(body)
-		parseRequest(body, request)
+		request = parseRequest(reqBody, request)
+		console.log('Back in server...')
+		var response = new Response()
+		response.generateResponse(request, (response) => console.log('Generated response...' + response))
 	})
-}
-
-function handleCloseEvent(socket) {
 	socket.on('close', () => {
 		console.log('Connection from' + socket.remoteAddress + 'closed')
-	})
-}
-module.exports = Server
+	})		
+})
+
+server.listen(port, () => {
+	console.log('Listening on port: '+ port)})
+
+server.on('error', (err) => {throw err})
