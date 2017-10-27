@@ -19,13 +19,13 @@ class Response {
     this.setHeaders(request)
     if (request.headers['Content-Type'] === 'text/html') {
       console.log('Inside')
-      var path = this.resolvePath(request.url)
+      let path = this.resolvePath(request.url)
       console.log('Path' + path)
-      var data = fs.readFileSync(path, 'utf-8')
+      let data = fs.readFileSync(path, 'utf-8')
       this.body = data
       return this.generateResStr()
     } else {
-      this.statusCode = 500
+      this.statusCode = 400
       this.statusMessage = status[this.statusCode]
       this.body = this.statusCode + ' ' + this.statusMessage
       return this.generateResStr()
@@ -41,7 +41,7 @@ class Response {
     return (url === '/') ? './test/index.html' : './test/about.html'
   }
   generateResStr () {
-    var str = ''
+    let str = ''
     str += this.version + ' ' + this.statusCode + ' ' + this.statusMessage + '\n'
     for (let i in this.headers) {
       console.log('Check' + i, this.headers[i])

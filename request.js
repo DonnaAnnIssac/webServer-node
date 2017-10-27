@@ -7,7 +7,7 @@ class Request {
     this.body = ''
   }
   parseRequest (reqBody) {
-    var msgBody, msgHead
+    let msgBody, msgHead
     reqBody = reqBody.split('\r\n')
     console.log(reqBody)
     reqBody.pop()
@@ -24,15 +24,15 @@ class Request {
     return this
   }
   parseRequestLine (line) {
-    var parts = line.split(' ')
+    let parts = line.split(' ')
     this.method = parts[0].trim()
     this.url = parts[1].trim()
     this.version = parts[2].trim()
   }
   parseRequestHeaders (line) {
-    var headers = {}
+    let headers = {}
     line.forEach((item) => {
-      var result = item.split(/:/)
+      let result = item.split(/:/)
       headers[result[0]] = result[1].trim()
     })
     this.headers = headers
