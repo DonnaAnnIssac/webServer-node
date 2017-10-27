@@ -15,26 +15,23 @@ class Response {
 		this.headers = {}
 		this.body = ''
 	}
-	generateResponse(request, callback) {
+	generateResponse(request) {
+		console.log('In Response class'+request, this)
+		setHeaders(request, this)
 		if(request.headers['content-type'] === 'text/html') {
+			console.log('Inside')
 			var path = resolvePath(request.url)
-			fs.readFile(path, 'utf-8', (err, data) => {
-				if(err) {
-					this.statusCode = 404
-					this.statusMessage = status[this.statusCode]
-					return this
-				}		
-				console.log('Generating response...')	
-				setHeaders(request, this)
-				this.body = data
-				console.log(this)
-				return this
-			})
+			console.log('Path'+ path)
+			var data = fs.readFileSync(path, 'utf-8')
+			this.body = data
+			return generateResStr(this)
 		}
 		else {
 			this.statusCode = 500
 			this.statusMessage = status[this.statusCode]
-			return this
+			this.body = this.statusCode + ' ' + this.statusMessage
+			return generateResStr(this)
+			
 		}
 
 	}
@@ -47,6 +44,19 @@ function resolvePath(url) {
 function setHeaders(request, response) {
 	let headers = {}
 	headers['Content-Type'] = request.headers['content-type'] 
+	headers['Date'] = new Date()
 	response.headers = headers
+}
+
+function generateResStr(response) {
+	var str = ''
+	str += response.version + ' ' + response.statusCode + ' ' + response.statusMessage + '\n'
+	for(let i in response.headers) {
+		console.log('Check'+ i, response.headers[i])
+		if(response.headers.hasOwnProperty(i))
+			str += i + ': ' + response.headers[i] + '\n'
+	}
+	str += '\n' + response.body
+	return str
 }
 module.exports = Response

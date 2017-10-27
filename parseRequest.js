@@ -1,14 +1,17 @@
 function parseRequest(reqBody, request) {
 	var msgBody, msgHead
+	reqBody = reqBody.toString().split('\r\n')
+	console.log(reqBody)
 	reqBody.pop()
 	reqBody.map((line, i) => {
-		if(line.startsWith('\r\n') && msgHead === undefined){
+		if(line.length === 0 && msgHead === undefined){
 			msgHead = reqBody.slice(0, i)
 			msgBody = reqBody.slice(i+1) 
 		}
 	})
 	request = parseRequestHeaders(msgHead.slice(1), parseRequestLine(msgHead[0], request))
 	request.body = msgBody.toString().trim()
+	console.log(request)
 	return request
 }
 

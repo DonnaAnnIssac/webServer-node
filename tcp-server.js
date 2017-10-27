@@ -9,25 +9,29 @@ var server = net.createServer((socket) => {
 	console.log('New client connection made')
 	console.log(socket.remoteAddress+':'+socket.remotePort)
 	var request = new Request()
-	var reqBody = [], i = 0
+	var reqBody = []//, i = 0
 	socket.setEncoding('utf-8')
 	socket.on('data', (data) => {
 		reqBody.push(data)
-		i++
-		if(reqBody[i-2] === '\r\n' && reqBody[i-1] === '\r\n') {
-			socket.end()
-			console.log('FIN!')
+		// i++
+		// if(reqBody[i-2] === '\r\n' && reqBody[i-1] === '\r\n') {
+		// socket.end()
+		// console.log('FIN!')
+		if(reqBody[0].endsWith('\r\n\r\n'))  {
+			request = parseRequest(reqBody, request)
+			var response = new Response()
+			var res = response.generateResponse(request)
+
+			socket.write(res, 'utf-8', () => {
+				console.log('Write complete')
+			})
 		}
-		console.log('Data so far...'+reqBody)
 	})
 	socket.on('end', () => {
-		request = parseRequest(reqBody, request)
-		console.log('Back in server...')
-		var response = new Response()
-		response.generateResponse(request, (response) => console.log('Generated response...' + response))
+		console.log('End event')
 	})
 	socket.on('close', () => {
-		console.log('Connection from' + socket.remoteAddress + 'closed')
+		console.log('Connection from ' + socket.remoteAddress + ' closed')
 	})		
 })
 
