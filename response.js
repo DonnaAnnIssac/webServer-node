@@ -35,24 +35,30 @@ class Response {
   }
   generateResponse (request, socket) {
     this.setHeaders(request)
-    let fd = fs.readFile(request.url, 'utf-8', (err, data) => {
+    fs.readFile(request.url, 'utf-8', (err, data) => {
       if (err) {
-        this.setStatus(404)
-        this.writeToSocket(this.generateResStr(), socket)
-        return
+        if (err.code === 'ENOENT') {
+          this.setStatus(404)
+          this.writeToSocket(this.generateResStr(), socket, request)
+          return
+        } else {
+          this.setStatus(500)
+          this.writeToSocket(this.generateResStr(), socket, request)
+          return
+        }
       } else if (data === undefined) {
         this.setStatus(400)
-        this.writeToSocket(this.generateResStr(), socket)
+        this.writeToSocket(this.generateResStr(), socket, request)
         return
       }
       this.body = data
-      this.writeToSocket(this.generateResStr(), socket)
+      this.writeToSocket(this.generateResStr(), socket, request)
     })
-    console.log(fd)
   }
   setHeaders (request) {
     this.getContentType(request)
     this.headers['Date'] = new Date()
+    this.headers['Connection'] = request.headers['Connection'] || 'keep-alive'
   }
   generateResStr () {
     let str = ''
@@ -72,10 +78,10 @@ class Response {
     let ext = path.extname(request.url)
     this.headers['Content-Type'] = mimeTypes[ext]
   }
-  writeToSocket (str, socket) {
+  writeToSocket (str, socket, request) {
     socket.write(str, 'utf-8', () => {
       console.log('Write complete')
-      socket.end()
+      if (this.headers['Connection'] === 'close') socket.end()
     })
   }
 }
