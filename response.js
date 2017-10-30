@@ -17,14 +17,13 @@ class Response {
   generateResponse (request) {
     console.log('In Response class' + request, this)
     this.setHeaders(request)
-    console.log('Inside')
-    let path = this.resolvePath(request.url)
-    console.log('Path' + path)
-    let data = fs.readFileSync(path, 'utf-8')
+    if (request.url === null) {
+      this.setStatus(400)
+      return this.generateResStr()
+    }
+    let data = fs.readFileSync(request.url, 'utf-8')
     if (data === undefined) {
-      this.statusCode = 400
-      this.statusMessage = status[this.statusCode]
-      this.body = this.statusCode + ' ' + this.statusMessage
+      this.setStatus(404)
       return this.generateResStr()
     }
     this.body = data
@@ -36,9 +35,6 @@ class Response {
     headers['Date'] = new Date()
     this.headers = headers
   }
-  resolvePath (url) {
-    return (url === '/') ? './test/index.html' : './test/about.html'
-  }
   generateResStr () {
     let str = ''
     str += this.version + ' ' + this.statusCode + ' ' + this.statusMessage + '\n'
@@ -48,6 +44,11 @@ class Response {
     }
     str += '\n' + this.body
     return str
+  }
+  setStatus (code) {
+    this.statusCode = code
+    this.statusMessage = status[code]
+    this.body = this.statusCode + ' ' + this.statusMessage
   }
 }
 

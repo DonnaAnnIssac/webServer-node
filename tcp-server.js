@@ -14,6 +14,7 @@ let server = net.createServer((socket) => {
     reqBody += (data)
     if (reqBody.endsWith('\r\n\r\n')) {
       request.parseRequest(reqBody)
+      resolvePath(request.url)
       let response = new Response()
       let res = response.generateResponse(request)
       socket.write(res, 'utf-8', () => {
@@ -37,3 +38,7 @@ server.listen(port, () => {
 server.on('error', (err) => {
   throw err
 })
+
+function resolvePath (url) {
+  url = (url === '/') ? './test/index.html' : (url === '/about') ? './test/about.html' : null
+}
