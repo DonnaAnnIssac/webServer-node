@@ -1,4 +1,5 @@
 const net = require('net')
+const path = require('path')
 const Request = require('./request.js')
 const Response = require('./response.js')
 
@@ -14,13 +15,10 @@ let server = net.createServer((socket) => {
     reqBody += (data)
     if (reqBody.endsWith('\r\n\r\n')) {
       request.parseRequest(reqBody)
-      resolvePath(request.url)
+      resolvePath(request)
+      console.log('Check again ' + request.url)
       let response = new Response()
-      let res = response.generateResponse(request)
-      socket.write(res, 'utf-8', () => {
-        console.log('Write complete')
-        socket.end()
-      })
+      response.generateResponse(request, socket)
     }
   })
   socket.on('end', () => {
@@ -39,6 +37,10 @@ server.on('error', (err) => {
   throw err
 })
 
-function resolvePath (url) {
-  url = (url === '/') ? './test/index.html' : (url === '/about') ? './test/about.html' : null
+function resolvePath (req) {
+  console.log('Check' + req.url)
+  let ext = path.extname(req.url)
+  req.url = (req.url === '/' || req.url === '/favicon.ico')
+            ? './test/index.html' : (ext.length === 0)
+            ? './test' + req.url + '.html' : './test' + req.url + ext
 }
