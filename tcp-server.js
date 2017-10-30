@@ -18,6 +18,7 @@ let server = net.createServer((socket) => {
       let res = response.generateResponse(request)
       socket.write(res, 'utf-8', () => {
         console.log('Write complete')
+        socket.end()
       })
     }
   })

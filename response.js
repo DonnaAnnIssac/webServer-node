@@ -17,19 +17,18 @@ class Response {
   generateResponse (request) {
     console.log('In Response class' + request, this)
     this.setHeaders(request)
-    if (request.headers['Content-Type'] === 'text/html') {
-      console.log('Inside')
-      let path = this.resolvePath(request.url)
-      console.log('Path' + path)
-      let data = fs.readFileSync(path, 'utf-8')
-      this.body = data
-      return this.generateResStr()
-    } else {
+    console.log('Inside')
+    let path = this.resolvePath(request.url)
+    console.log('Path' + path)
+    let data = fs.readFileSync(path, 'utf-8')
+    if (data === undefined) {
       this.statusCode = 400
       this.statusMessage = status[this.statusCode]
       this.body = this.statusCode + ' ' + this.statusMessage
       return this.generateResStr()
     }
+    this.body = data
+    return this.generateResStr()
   }
   setHeaders (request) {
     let headers = {}
