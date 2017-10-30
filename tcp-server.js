@@ -16,7 +16,6 @@ let server = net.createServer((socket) => {
     if (reqBody.endsWith('\r\n\r\n')) {
       request.parseRequest(reqBody)
       resolvePath(request)
-      console.log('Check again ' + request.url)
       let response = new Response()
       response.generateResponse(request, socket)
     }
@@ -38,7 +37,6 @@ server.on('error', (err) => {
 })
 
 function resolvePath (req) {
-  console.log('Check' + req.url)
   let ext = path.extname(req.url)
   req.url = (req.url === '/' || req.url === '/favicon.ico')
             ? './test/index.html' : (ext.length === 0)

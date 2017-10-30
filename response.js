@@ -34,10 +34,8 @@ class Response {
     this.body = ''
   }
   generateResponse (request, socket) {
-    console.log('In Response class')
     this.setHeaders(request)
-    console.log('Hey' + request.url)
-    fs.readFile(request.url, 'utf-8', (err, data) => {
+    let fd = fs.readFile(request.url, 'utf-8', (err, data) => {
       if (err) {
         this.setStatus(404)
         this.writeToSocket(this.generateResStr(), socket)
@@ -50,6 +48,7 @@ class Response {
       this.body = data
       this.writeToSocket(this.generateResStr(), socket)
     })
+    console.log(fd)
   }
   setHeaders (request) {
     this.getContentType(request)
@@ -62,7 +61,6 @@ class Response {
       if (this.headers.hasOwnProperty(i)) str += i + ': ' + this.headers[i] + '\n'
     }
     str += '\n' + this.body
-    console.log('Oohhh' + str)
     return str
   }
   setStatus (code) {
