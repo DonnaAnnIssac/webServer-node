@@ -12,9 +12,10 @@ let server = net.createServer((socket) => {
   let reqBody = ''
   socket.setEncoding('utf-8')
   socket.on('data', (data) => {
-    reqBody += (data)
+    reqBody += data
     if (reqBody.endsWith('\r\n\r\n')) {
       request.parseRequest(reqBody)
+      reqBody = ''
       resolvePath(request)
       let response = new Response()
       response.generateResponse(request, socket)
