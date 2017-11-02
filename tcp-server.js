@@ -8,14 +8,14 @@ const port = 9000
 let server = net.createServer((socket) => {
   console.log('New client connection made')
   console.log(socket.remoteAddress + ':' + socket.remotePort)
-  let request = new Request()
   let reqBody = ''
-  socket.setEncoding('utf-8')
   socket.on('data', (data) => {
     reqBody += data
     if (reqBody.endsWith('\r\n\r\n')) {
+      let request = new Request()
       request.parseRequest(reqBody)
       reqBody = ''
+      console.log(request)
       resolvePath(request)
       let response = new Response()
       response.generateResponse(request, socket)
@@ -26,6 +26,9 @@ let server = net.createServer((socket) => {
   })
   socket.on('close', () => {
     console.log('Connection from ' + socket.remoteAddress + ' closed')
+  })
+  socket.on('error', err => {
+    console.log(err)
   })
 })
 
@@ -39,7 +42,8 @@ server.on('error', (err) => {
 
 function resolvePath (req) {
   let ext = path.extname(req.url)
-  req.url = (req.url === '/' || req.url === '/favicon.ico')
+  req.url = (req.url === '/')
             ? './test/index.html' : (ext.length === 0)
-            ? './test' + req.url + '.html' : './test' + req.url + ext
+            ? './test' + req.url + '.html' : './test' + req.url
+  console.log(req.url)
 }

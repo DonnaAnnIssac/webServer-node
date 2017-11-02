@@ -14,10 +14,11 @@ const mimeTypes = {
   '.css': 'text/css',
   '.json': 'application/json',
   '.png': 'image/png',
-  '.jpg': 'image/jpg',
+  '.jpg': 'image/jpeg',
   '.gif': 'image/gif',
   '.wav': 'audio/wav',
   '.mp4': 'video/mp4',
+  '.mp3': 'audio/mp3',
   '.woff': 'application/font-woff',
   '.ttf': 'application/font-ttf',
   '.eot': 'application/vnd.ms-fontobject',
@@ -31,11 +32,10 @@ class Response {
     this.statusCode = 200
     this.statusMessage = status[this.statusCode]
     this.headers = {}
-    this.body = ''
   }
   generateResponse (request, socket) {
     this.setHeaders(request)
-    fs.readFile(request.url, 'utf-8', (err, data) => {
+    fs.readFile(request.url, (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
           this.setStatus(404)
@@ -52,11 +52,12 @@ class Response {
         return
       }
       this.body = data
+      this.headers['Content-Length'] = this.body.byteLength
       this.writeToSocket(this.generateResStr(), socket, request)
     })
   }
   setHeaders (request) {
-    this.getContentType(request)
+    this.setContentType(request)
     this.headers['Date'] = new Date()
     this.headers['Connection'] = request.headers['Connection'] || 'keep-alive'
   }
@@ -66,22 +67,25 @@ class Response {
     for (let i in this.headers) {
       if (this.headers.hasOwnProperty(i)) str += i + ': ' + this.headers[i] + '\n'
     }
-    str += '\n' + this.body
+    str += '\n'
     return str
   }
   setStatus (code) {
     this.statusCode = code
     this.statusMessage = status[code]
-    this.body = this.statusCode + ' ' + this.statusMessage
   }
-  getContentType (request) {
+  setContentType (request) {
     let ext = path.extname(request.url)
     this.headers['Content-Type'] = mimeTypes[ext]
   }
   writeToSocket (str, socket, request) {
-    socket.write(str, 'utf-8', () => {
-      console.log('Write complete')
-      if (this.headers['Connection'] === 'close') socket.end()
+    socket.write(str, (err) => {
+      if (err) console.log('ERR IN WRITE:', err)
+      socket.write(this.body, err => {
+        if (err) console.log('ERR IN WRITE:', err)
+        console.log('Write complete')
+        if (this.headers['Connection'] === 'close') socket.destroy()
+      })
     })
   }
 }
