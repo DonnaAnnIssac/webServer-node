@@ -1,10 +1,11 @@
 const parseRequest = require('./parseRequest')
-const getHandler = require('./get-handler')
-const postHandler = require('./post-handler')
+const methods = require('./method')
+const logger = require('./logger')
 
 let handlers = [
-  getHandler,
-  postHandler
+  logger,
+  methods
+  // bodyParser
 ]
 
 class Request {
