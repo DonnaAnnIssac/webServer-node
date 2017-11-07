@@ -1,24 +1,26 @@
 const net = require('net')
-const path = require('path')
-const Request = require('./request.js')
-const Response = require('./response.js')
-
+const Request = require('./request')
+const Response = require('./response')
 const port = 9000
 
 let server = net.createServer((socket) => {
   console.log('New client connection made')
   console.log(socket.remoteAddress + ':' + socket.remotePort)
-  let reqBody = ''
+  let reqStr = ''
   socket.on('data', (data) => {
-    reqBody += data
-    if (reqBody.endsWith('\r\n\r\n')) {
-      let request = new Request()
-      request.parseRequest(reqBody)
-      reqBody = ''
-      console.log(request)
-      resolvePath(request)
-      let response = new Response()
-      response.generateResponse(request, socket)
+    reqStr += data
+    if (reqStr.includes('Content-Length')) {
+      console.log('Inside POST')
+      let len = findContentLength(reqStr)
+      let arr = findContent(reqStr)
+      if (parseInt(len) === arr[1]) {
+        createReqAndRes(reqStr, socket)
+        reqStr = ''
+      }
+    }
+    if (reqStr.endsWith('\r\n\r\n')) {
+      createReqAndRes(reqStr, socket)
+      reqStr = ''
     }
   })
   socket.on('end', () => {
@@ -40,10 +42,24 @@ server.on('error', (err) => {
   throw err
 })
 
-function resolvePath (req) {
-  let ext = path.extname(req.url)
-  req.url = (req.url === '/')
-            ? './test/index.html' : (ext.length === 0)
-            ? './test' + req.url + '.html' : './test' + req.url
-  console.log(req.url)
+function findContentLength (reqStr) {
+  let str = reqStr.slice(reqStr.indexOf('Content-Length'))
+  let arr = str.slice(0, str.search('\r\n')).split(' ')
+  return arr[1]
+}
+
+function findContent (reqStr) {
+  let i = reqStr.search('\r\n\r\n')
+  return [reqStr.slice(i + 4), reqStr.slice(i + 4).length]
+}
+function next (req, res, socket) {
+  let handler = (req.method === 'GET') ? req.handlers.shift() : req.handlers.pop()
+  handler(req, res, socket, next)
+}
+
+function createReqAndRes (reqStr, socket) {
+  let request = new Request(reqStr)
+  console.log(request)
+  let response = new Response(request)
+  next(request, response, socket)
 }

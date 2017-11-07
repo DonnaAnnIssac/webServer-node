@@ -1,4 +1,3 @@
-const fs = require('fs')
 const path = require('path')
 
 const status = {
@@ -27,39 +26,16 @@ const mimeTypes = {
 }
 
 class Response {
-  constructor () {
+  constructor (request) {
     this.version = 'HTTP/1.1'
     this.statusCode = 200
     this.statusMessage = status[this.statusCode]
     this.headers = {}
+    setHeaders(request, this)
   }
-  generateResponse (request, socket) {
-    this.setHeaders(request)
-    fs.readFile(request.url, (err, data) => {
-      if (err) {
-        if (err.code === 'ENOENT') {
-          this.setStatus(404)
-          this.writeToSocket(this.generateResStr(), socket, request)
-          return
-        } else {
-          this.setStatus(500)
-          this.writeToSocket(this.generateResStr(), socket, request)
-          return
-        }
-      } else if (data === undefined) {
-        this.setStatus(400)
-        this.writeToSocket(this.generateResStr(), socket, request)
-        return
-      }
-      this.body = data
-      this.headers['Content-Length'] = this.body.byteLength
-      this.writeToSocket(this.generateResStr(), socket, request)
-    })
-  }
-  setHeaders (request) {
-    this.setContentType(request)
-    this.headers['Date'] = new Date()
-    this.headers['Connection'] = request.headers['Connection'] || 'keep-alive'
+  setStatus (code) {
+    this.statusCode = code
+    this.statusMessage = status[code]
   }
   generateResStr () {
     let str = ''
@@ -68,26 +44,20 @@ class Response {
       if (this.headers.hasOwnProperty(i)) str += i + ': ' + this.headers[i] + '\n'
     }
     str += '\n'
+    console.log(str)
     return str
   }
-  setStatus (code) {
-    this.statusCode = code
-    this.statusMessage = status[code]
-  }
-  setContentType (request) {
-    let ext = path.extname(request.url)
+  setContentType (url) {
+    let ext = path.extname(url)
     this.headers['Content-Type'] = mimeTypes[ext]
+    console.log('After setting content type')
+    console.log(this)
   }
-  writeToSocket (str, socket, request) {
-    socket.write(str, (err) => {
-      if (err) console.log('ERR IN WRITE:', err)
-      socket.write(this.body, err => {
-        if (err) console.log('ERR IN WRITE:', err)
-        console.log('Write complete')
-        if (this.headers['Connection'] === 'close') socket.destroy()
-      })
-    })
-  }
+}
+
+function setHeaders (request, response) {
+  response.headers['Date'] = new Date()
+  response.headers['Connection'] = request.headers['Connection'] || 'keep-alive'
 }
 
 module.exports = Response
