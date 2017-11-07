@@ -9,18 +9,18 @@ let server = net.createServer((socket) => {
   let reqStr = ''
   socket.on('data', (data) => {
     reqStr += data
-    if (reqStr.includes('Content-Length')) {
-      console.log('Inside POST')
-      let len = findContentLength(reqStr)
-      let arr = findContent(reqStr)
-      if (parseInt(len) === arr[1]) {
+    if (reqStr.includes('\r\n\r\n')) {
+      let arr = reqStr.split('\r\n\r\n')
+      let obj = headerParser(arr[0])
+      if (arr[1].length === 0 && obj.Method === 'GET') {
         createReqAndRes(reqStr, socket)
         reqStr = ''
+      } else {
+        if (parseInt(obj['Content-Length']) === arr[1].length) {
+          createReqAndRes(reqStr, socket)
+          reqStr = ''
+        }
       }
-    }
-    if (reqStr.endsWith('\r\n\r\n')) {
-      createReqAndRes(reqStr, socket)
-      reqStr = ''
     }
   })
   socket.on('end', () => {
@@ -42,18 +42,27 @@ server.on('error', (err) => {
   throw err
 })
 
-function findContentLength (reqStr) {
-  let str = reqStr.slice(reqStr.indexOf('Content-Length'))
-  let arr = str.slice(0, str.search('\r\n')).split(' ')
-  return arr[1]
+function headerParser (headerStr) {
+  let arr = headerStr.split('\r\n')
+  let headerObj = {}
+  let reqLine = arr.shift().split(' ')
+  headerObj['Method'] = reqLine[0]
+  headerObj['Path'] = reqLine[1]
+  headerObj['Version'] = reqLine[2]
+  arr.forEach((element) => {
+    let header = element.split(':')
+    headerObj[header[0]] = header[1]
+  })
+  return headerObj
 }
 
-function findContent (reqStr) {
-  let i = reqStr.search('\r\n\r\n')
-  return [reqStr.slice(i + 4), reqStr.slice(i + 4).length]
+function foo (reqStr, socket) {
+
 }
+
 function next (req, res, socket) {
-  let handler = (req.method === 'GET') ? req.handlers.shift() : req.handlers.pop()
+  if (req.handlers.length === 0) socket.end()
+  let handler = req.handlers.shift()
   handler(req, res, socket, next)
 }
 
