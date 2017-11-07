@@ -34,7 +34,7 @@ function writeToSocket (str, response, socket) {
     socket.write(response.body, err => {
       if (err) console.log('ERR IN WRITE:', err)
       console.log('Write complete')
-      if (response.headers['Connection'] === 'close') socket.destroy()
+      if (response.headers['Connection'] === 'close') socket.close()
     })
   })
 }
