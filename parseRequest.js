@@ -1,37 +1,17 @@
-function parseRequest (reqStr, request) {
-  reqStr = reqStr.split('\r\n')
-  let msgBody, msgHead
-  reqStr.map((line, i) => {
-    if (line.length === 0 && msgHead === undefined) {
-      msgHead = reqStr.slice(0, i)
-      msgBody = reqStr.slice(i + 1)
-    }
-  })
-  parseRequestLine(msgHead[0], request)
-  parseRequestHeaders(msgHead.slice(1), request)
-  parseRequestBody(msgBody, request)
-  return request
-}
-function parseRequestLine (line, request) {
-  let parts = line.split(' ')
-  request.method = parts[0].trim()
-  request.url = parseUrl(parts[1].trim())
-  request.version = parts[2].trim()
-}
-function parseRequestHeaders (section, request) {
+function parseRequest (headerStr) {
+  let arr = headerStr.split('\r\n')
+  let reqLine = arr.shift().split(' ')
+  let headerObj = {}
+  headerObj['Method'] = reqLine[0]
+  headerObj['Path'] = reqLine[1]
+  headerObj['Version'] = reqLine[2]
   let headers = {}
-  section.forEach((item) => {
-    let result = item.split(/:/)
-    headers[result[0]] = result[1].trim()
+  arr.forEach((element) => {
+    let header = element.split(':')
+    headers[header[0]] = header[1]
   })
-  request.headers = headers
-}
-function parseUrl (url) {
-  let i = url.indexOf('?')
-  return (i !== -1) ? url.slice(0, i) : url
-}
-function parseRequestBody (msgBody, request) {
-  request.body = msgBody.toString().trim()
+  headerObj['Headers'] = headers
+  return headerObj
 }
 
 module.exports = parseRequest
