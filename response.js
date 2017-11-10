@@ -30,6 +30,7 @@ class Response {
     this.version = 'HTTP/1.1'
     this.statusCode = 200
     this.statusMessage = status[this.statusCode]
+    this.socket = request.socket
     this.headers = {}
     setHeaders(request, this)
   }
@@ -44,14 +45,24 @@ class Response {
       if (this.headers.hasOwnProperty(i)) str += i + ': ' + this.headers[i] + '\n'
     }
     str += '\n'
-    console.log(str)
+    // console.log(str)
     return str
   }
   setContentType (url) {
     let ext = path.extname(url)
     this.headers['Content-Type'] = mimeTypes[ext]
     console.log('After setting content type')
-    console.log(this)
+    // console.log(this)
+  }
+  send () {
+    this.socket.write(this.generateResStr(), (err) => {
+      if (err) console.log('ERR IN WRITE:', err)
+      this.socket.write(this.body, err => {
+        if (err) console.log('ERR IN WRITE:', err)
+        console.log('Write complete')
+        if (this.headers['Connection'] === 'close') this.close()
+      })
+    })
   }
 }
 
