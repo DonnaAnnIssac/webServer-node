@@ -1,27 +1,17 @@
-const parseRequest = require('./parseRequest')
-const methods = require('./method')
-const logger = require('./logger')
-
-let handlers = [
-  logger,
-  methods
-  // bodyParser
-]
-
 class Request {
-  constructor (reqStr) {
-    this.method = ''
-    this.url = ''
-    this.version = ''
-    this.headers = {}
+  constructor (reqObj, handlers) {
+    this.method = reqObj.Method
+    this.url = parseUrl(reqObj.Path)
+    this.version = reqObj.Version
+    this.headers = reqObj.Headers
     this.body = ''
     this.handlers = [...handlers]
-    requestParser(reqStr, this)
   }
 }
 
-function requestParser (reqStr, request) {
-  parseRequest(reqStr, request)
+function parseUrl (url) {
+  let i = url.indexOf('?')
+  return (i !== -1) ? url.slice(0, i) : url
 }
 
 module.exports = Request
