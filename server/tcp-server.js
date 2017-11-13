@@ -60,8 +60,9 @@ function createReqAndRes (reqObj, socket) {
 }
 
 function next (req, res) {
-  if (req.handlers.length === 0 || routes[req.method].hasOwnProperty(req.url)) {
-    methodHandler(req, res)
+  if (req.handlers.length === 0 && routes[req.method].hasOwnProperty(req.url)) {
+    req.handlers.push(methodHandler)
+    next(req, res)
     return
   }
   let handler = req.handlers.shift()
@@ -69,12 +70,12 @@ function next (req, res) {
 }
 
 const methodHandler = (req, res) => {
-  if (routes[req.method].hasOwnProperty(req.url)) routes[req.method][req.url](req, res)
-  else {
+  if (!routes[req.method].hasOwnProperty(req.url)) {
     res.setStatus(404)
     res.body = res.statusCode + ' ' + res.statusMessage
     res.send()
   }
+  routes[req.method][req.url](req, res)
 }
 
 function addRoutes (method, route, callback) {
