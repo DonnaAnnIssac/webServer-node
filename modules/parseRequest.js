@@ -3,7 +3,7 @@ function parseRequest (headerStr) {
   let reqLine = arr.shift().split(' ')
   let headerObj = {}
   headerObj['Method'] = reqLine[0]
-  headerObj['Path'] = reqLine[1]
+  headerObj['Path'] = parseUrl(reqLine[1])
   headerObj['Version'] = reqLine[2]
   let headers = {}
   arr.forEach((element) => {
@@ -12,6 +12,11 @@ function parseRequest (headerStr) {
   })
   headerObj['Headers'] = headers
   return headerObj
+}
+
+function parseUrl (url) {
+  let i = url.indexOf('?')
+  return (i !== -1) ? url.slice(0, i) : url
 }
 
 module.exports = parseRequest
