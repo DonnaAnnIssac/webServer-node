@@ -58,7 +58,7 @@ class Response {
       this.socket.write(this.body, err => {
         if (err) console.log('ERR IN WRITE:', err)
         console.log('Write complete')
-        if (this.headers['Connection'] === 'close') this.close()
+        if (this.headers['Connection'] === 'close') this.socket.close()
       })
     })
   }
