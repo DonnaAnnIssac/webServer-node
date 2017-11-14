@@ -52,7 +52,8 @@ class Response {
     this.headers['Content-Type'] = mimeTypes[ext]
   }
   send () {
-    this.headers['Content-Length'] = this.body.byteLength
+    this.headers['Content-Length'] = (typeof this.body !== 'string')
+    ? this.body.byteLength : this.body.length
     this.socket.write(this.generateResStr(), (err) => {
       if (err) console.log('ERR IN WRITE:', err)
       this.socket.write(this.body, err => {
