@@ -1,9 +1,11 @@
 const server = require('./server/tcp-server')
 const logger = require('./middleware/logger')
+const bodyParser = require('./middleware/bodyParser')
 const fs = require('fs')
 const staticFileHandler = require('./middleware/staticFileHandler')
 
 server.startServer(9000)
+server.addHandler(bodyParser)
 server.addHandler(logger)
 server.addHandler((req, res, next) => {
   console.log('My own handler for request: ' + req.body)
@@ -22,13 +24,7 @@ server.addRoutes('GET', '/bg.jpg', (req, res) => {
 
 server.addRoutes('POST', '/data.html', (req, res) => {
   console.log('Now I am here')
-  fs.readFile('./form-test/data.html', (err, data) => {
-    console.log('I am here now')
-    if (err) throw err
-    // console.log(data, req.body)
-    // res.body = req.body['say'] + ' ' + req.body['to']
-    res.body = data
-    res.setContentType('/data.html')
-    res.send()
-  })
+  res.body = req.body['Name'] + ' is ' + req.body['Age']
+  res.setContentType('/data.html')
+  res.send()
 })
