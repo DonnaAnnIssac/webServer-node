@@ -3,7 +3,10 @@ const path = require('path')
 
 function staticFileHandler (directory) {
   return (req, res, next) => {
-    if (req.method === 'POST') next(req, res)
+    if (req.method === 'POST') {
+      next(req, res)
+      return
+    }
     req.url = resolvePath(req.url, directory)
     fs.readFile(req.url, (err, data) => {
       if (err) {
