@@ -15,7 +15,7 @@ const bodyParser = (req, res, next) => {
     })
     req.body = parsedBody
     next(req, res)
-  }
+  } else next(req, res)
 }
 
 module.exports = bodyParser
