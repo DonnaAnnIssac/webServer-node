@@ -2,6 +2,7 @@ const path = require('path')
 
 const status = {
   200: 'OK',
+  303: 'See Other',
   400: 'Bad Request',
   404: 'Not Found',
   500: 'Internal Server Error'
@@ -32,7 +33,8 @@ class Response {
     this.statusMessage = status[this.statusCode]
     this.socket = request.socket
     this.headers = {}
-    setHeaders(request, this)
+    this.request = request
+    // setHeaders(request, this)
   }
   setStatus (code) {
     this.statusCode = code
@@ -52,22 +54,30 @@ class Response {
     this.headers['Content-Type'] = mimeTypes[ext]
   }
   send () {
-    this.headers['Content-Length'] = (typeof this.body !== 'string')
+    if (this.body !== undefined) {
+      this.headers['Content-Length'] = (typeof this.body !== 'string')
     ? this.body.byteLength : this.body.length
+    }
     this.socket.write(this.generateResStr(), (err) => {
       if (err) console.log('ERR IN WRITE:', err)
-      this.socket.write(this.body, err => {
-        if (err) console.log('ERR IN WRITE:', err)
-        console.log('Write complete')
-        if (this.headers['Connection'] === 'close') this.socket.close()
-      })
+      if (this.body !== undefined) {
+        this.socket.write(this.body, err => {
+          if (err) console.log('ERR IN WRITE:', err)
+          console.log('Write complete')
+          if (this.headers['Connection'] === 'close') this.socket.close()
+        })
+      }
     })
   }
-}
-
-function setHeaders (request, response) {
-  response.headers['Date'] = new Date()
-  response.headers['Connection'] = request.headers['Connection'] || 'keep-alive'
+  setHeaders () {
+    this.headers['Date'] = new Date()
+    this.headers['Connection'] = this.request.headers['Connection'] || 'keep-alive'
+  }
+  redirect (location) {
+    this.setStatus(303)
+    this.headers['Location'] = location
+    this.send()
+  }
 }
 
 module.exports = Response
