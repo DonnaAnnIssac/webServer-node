@@ -1,9 +1,11 @@
 const net = require('net')
 const Request = require('../modules/request')
 const Response = require('../modules/response')
-const parseRequest = require('../modules/parseRequest.js')
+const parseRequest = require('../modules/parseRequest')
+const fs = require('fs')
+const bodyParser = require('../middleware/bodyParser')
 const logger = require('../middleware/logger')
-const staticFileHandler = require('../middleware/staticFileHandler.js')
+const staticFileHandler = require('../middleware/staticFileHandler')
 
 const routes = {
   GET: {},
@@ -29,6 +31,7 @@ function startServer (port) {
         }
         if (parseInt(obj.Headers['Content-Length']) === body.length) {
           let [request, response] = createReqAndRes(obj, socket)
+          request.body = body
           next(request, response)
           reqStr = ''
         }
@@ -53,6 +56,7 @@ function startServer (port) {
 }
 
 function createReqAndRes (reqObj, socket) {
+  addHandler(methodHandler)
   let request = new Request(reqObj, handlers)
   request['socket'] = socket
   let response = new Response(request)
@@ -60,22 +64,21 @@ function createReqAndRes (reqObj, socket) {
 }
 
 function next (req, res) {
-  if (req.handlers.length === 0 && routes[req.method].hasOwnProperty(req.url)) {
-    req.handlers.push(methodHandler)
-    next(req, res)
-    return
-  }
   let handler = req.handlers.shift()
   handler(req, res, next)
 }
 
-const methodHandler = (req, res) => {
-  if (!routes[req.method].hasOwnProperty(req.url)) {
+const methodHandler = (req, res, next) => {
+  if (routes[req.method].hasOwnProperty(req.url)) {
+    routes[req.method][req.url](req, res)
+  } else {
     res.setStatus(404)
-    res.body = res.statusCode + ' ' + res.statusMessage
-    res.send()
+    fs.readFile('./server/404.html', (err, data) => {
+      if (err) throw err
+      res.body = data
+      res.send()
+    })
   }
-  routes[req.method][req.url](req, res)
 }
 
 function addRoutes (method, route, callback) {
