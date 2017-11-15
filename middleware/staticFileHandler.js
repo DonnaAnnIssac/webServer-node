@@ -7,16 +7,15 @@ function staticFileHandler (directory) {
       next(req, res)
       return
     }
-    req.url = resolvePath(req.url, directory)
-    fs.readFile(req.url, (err, data) => {
+    fs.readFile(resolvePath(req.url, directory), (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          req.url = req.url.slice(directory.length)
           next(req, res)
           return
         } else throw err
       }
       res.body = data
+      res.setHeaders()
       res.setContentType(req.url)
       res.send()
     })
