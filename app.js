@@ -17,14 +17,28 @@ server.addRoutes('GET', '/bg.jpg', (req, res) => {
   fs.readFile('./test/images/bg.jpg', (err, data) => {
     if (err) throw err
     res.body = data
+    res.setHeaders()
     res.setContentType('./test/images/bg.jpg')
     res.send()
   })
 })
 
 server.addRoutes('POST', '/data.html', (req, res) => {
-  console.log('Now I am here')
-  res.body = req.body['Name'] + ' is ' + req.body['Age']
+  res.body = req.body['say'] + ' ' + req.body['to']
+  res.setHeaders()
   res.setContentType('/data.html')
+  res.send()
+})
+
+server.addRoutes('GET', '/home', (req, res) => {
+  res.body = 'Home Page'
+  res.send()
+})
+
+server.addRoutes('POST', '/submit.cgi', (req, res) => {
+  fs.appendFile('./write.txt', req.files['secret'])
+  res.body = 'File written'
+  res.setHeaders()
+  res.setContentType('/submit.cgi')
   res.send()
 })
