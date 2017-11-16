@@ -22,14 +22,19 @@ function startServer (port) {
     socket.on('data', (data) => {
       reqStr += data
       if (reqStr.includes('\r\n\r\n')) {
-        let [header, body] = reqStr.split('\r\n\r\n')
+        // console.log(reqStr)
+        let header = reqStr.slice(0, reqStr.indexOf('\r\n\r\n'))
+        let body = reqStr.slice(reqStr.indexOf('\r\n\r\n') + 4)
+        // console.log(body.length)
         let obj = parseRequest(header)
+        // console.log(obj.Headers['Content-Length'])
         if (obj.Headers['Content-Length'] === undefined) {
           let [request, response] = createReqAndRes(obj, socket)
           next(request, response)
           reqStr = ''
         }
         if (parseInt(obj.Headers['Content-Length']) === body.length) {
+          // console.log('Here')
           let [request, response] = createReqAndRes(obj, socket)
           request.body = body
           next(request, response)
