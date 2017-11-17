@@ -3,9 +3,6 @@ const Request = require('../modules/request')
 const Response = require('../modules/response')
 const parseRequest = require('../modules/parseRequest')
 const fs = require('fs')
-const bodyParser = require('../middleware/bodyParser')
-const logger = require('../middleware/logger')
-const staticFileHandler = require('../middleware/staticFileHandler')
 
 const routes = {
   GET: {},
@@ -18,30 +15,7 @@ function startServer (port) {
   let server = net.createServer((socket) => {
     console.log('New client connection made')
     console.log(socket.remoteAddress + ':' + socket.remotePort)
-    let reqStr = ''
-    socket.on('data', (data) => {
-      reqStr += data
-      if (reqStr.includes('\r\n\r\n')) {
-        // console.log(reqStr)
-        let header = reqStr.slice(0, reqStr.indexOf('\r\n\r\n'))
-        let body = reqStr.slice(reqStr.indexOf('\r\n\r\n') + 4)
-        // console.log(body.length)
-        let obj = parseRequest(header)
-        // console.log(obj.Headers['Content-Length'])
-        if (obj.Headers['Content-Length'] === undefined) {
-          let [request, response] = createReqAndRes(obj, socket)
-          next(request, response)
-          reqStr = ''
-        }
-        if (parseInt(obj.Headers['Content-Length']) === body.length) {
-          // console.log('Here')
-          let [request, response] = createReqAndRes(obj, socket)
-          request.body = body
-          next(request, response)
-          reqStr = ''
-        }
-      }
-    })
+    handleDataEvent(socket)
     socket.on('end', () => {
       console.log('End event')
     })
@@ -58,6 +32,34 @@ function startServer (port) {
   server.on('error', (err) => {
     throw err
   })
+}
+
+function handleDataEvent (socket) {
+  let reqStr = ''
+  socket.on('data', (data) => {
+    reqStr += data
+    if (reqStr.includes('\r\n\r\n')) {
+      let [header, body] = getHeaderAndBody(reqStr)
+      let obj = parseRequest(header)
+      reqStr = handleRequest(obj, socket, body, reqStr)
+    }
+  })
+}
+
+function getHeaderAndBody (reqStr) {
+  let header = reqStr.slice(0, reqStr.indexOf('\r\n\r\n'))
+  let body = reqStr.slice(reqStr.indexOf('\r\n\r\n') + 4)
+  return [header, body]
+}
+
+function handleRequest (obj, socket, body, reqStr) {
+  if (obj.Headers['Content-Length'] === undefined || parseInt(obj.Headers['Content-Length']) === body.length) {
+    let [request, response] = createReqAndRes(obj, socket)
+    if (request.method === 'POST') request.body = body
+    next(request, response)
+    reqStr = ''
+  }
+  return reqStr
 }
 
 function createReqAndRes (reqObj, socket) {
