@@ -1,13 +1,14 @@
 {
-  "name": "node-server",
+  "name": "web-server-node",
   "version": "1.0.0",
-  "description": "",
-  "main": ".eslintrc.js",
+  "description": "web server using node's net module",
+  "main": "app.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "standard": "^10.0.3"
+    "standard": "^10.0.3",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {},
   "scripts": {
@@ -17,8 +18,14 @@
     "type": "git",
     "url": "git+https://github.com/DonnaAnnIssac/webServer-node.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "http",
+    "server",
+    "middleware",
+    "sessions",
+    "sockets"
+  ],
+  "author": "Donna Ann Issac",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/DonnaAnnIssac/webServer-node/issues"
