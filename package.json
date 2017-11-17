@@ -1,7 +1,7 @@
 {
-  "name": "web-server-node",
+  "name": "http-server",
   "version": "1.0.0",
-  "description": "web server using node's net module",
+  "description": "web server built on node.js net module",
   "main": "app.js",
   "directories": {
     "test": "test"
@@ -12,6 +12,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
