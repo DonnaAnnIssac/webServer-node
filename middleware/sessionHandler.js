@@ -14,7 +14,7 @@ const createSession = (res) => {
 }
 
 const addSession = (req, data) => {
-  if (cookieExists) Session[req.headers]['Cookie'] = data
+  if (cookieExists) Session[req.headers['Cookie']] = data
 }
 const getSession = (req) => {
   return (cookieExists) ? Session[req.headers['Cookie']] : undefined

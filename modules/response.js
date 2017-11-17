@@ -9,6 +9,7 @@ const status = {
 }
 
 const mimeTypes = {
+  '.txt': 'text/plain',
   '.html': 'text/html',
   '.js': 'text/javascript',
   '.css': 'text/css',
@@ -19,10 +20,6 @@ const mimeTypes = {
   '.wav': 'audio/wav',
   '.mp4': 'video/mp4',
   '.mp3': 'audio/mp3',
-  '.woff': 'application/font-woff',
-  '.ttf': 'application/font-ttf',
-  '.eot': 'application/vnd.ms-fontobject',
-  '.otf': 'application/font-otf',
   '.svg': 'application/image/svg+xml'
 }
 
@@ -34,7 +31,6 @@ class Response {
     this.socket = request.socket
     this.headers = {}
     this.request = request
-    // setHeaders(request, this)
   }
   setStatus (code) {
     this.statusCode = code

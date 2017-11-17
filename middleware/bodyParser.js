@@ -9,8 +9,6 @@ const bodyParser = (req, res, next) => {
     let [parsedBody, files] = parseMultipartFormData(req)
     req.body = parsedBody
     req.files = files
-    // console.log('Body\n' + req.body)
-    // console.log('Files\n' + req.files)
     next(req, res)
   } else next(req, res)
 }
@@ -35,16 +33,12 @@ function parseJsonTypeBody (req) {
 
 function parseMultipartFormData (req) {
   let [parts, boundary] = getParts(req)
-  // console.log('Parts')
-  // console.log(parts)
   return parseParts(parts, boundary)
 }
 
 function getParts (req) {
   let i = req.headers['Content-Type'].indexOf('=')
   let boundary = req.headers['Content-Type'].slice(i + 1)
-  // console.log('Boundary')
-  // console.log(boundary)
   return [req.body.split('--' + boundary + '\r\n'), boundary]
 }
 
@@ -55,17 +49,12 @@ function parseParts (parts, boundary) {
     if (part.length !== 0) {
       let [headers, body] = part.split('\r\n\r\n')
       headers = headers.split('\r\n')
-      // console.log('Part headers\n' + headers)
-      // console.log(headers.length)
       body = body.slice(0, body.indexOf('--' + boundary))
-      // console.log('Part body\n' + body)
       if (headers.length > 1) files = parsePartWithFile(headers, files, body)
       else {
       // Without Content-Type and file
         let key = headers[0].slice(headers[0].indexOf('=') + 1)
-        // console.log('Key\n' + key.slice(1, key.length - 1))
         parsedBody[key.slice(1, key.length - 1)] = body
-        // console.log(parsedBody[key.slice(1, key.length - 1)])
       }
     }
   })
@@ -73,14 +62,10 @@ function parseParts (parts, boundary) {
 }
 
 function parsePartWithFile (headersArr, files, body) {
-  // console.log(headersArr[0])
   let i = (headersArr[0].indexOf('name') + 5)
   let j = headersArr[0].lastIndexOf(';')
-  // console.log(i, j)
   let key = headersArr[0].slice(i, j)
-  // console.log('Key\n' + key)
   files[key.slice(1, key.length - 1)] = Buffer.from(body)
-  // console.log(files[key.slice(1, key.length - 1)])
   return files
 }
 
