@@ -1,39 +1,35 @@
-const bodyParser = (req, res, next) => {
+function parseUrlEncodedBody (req, res, next) {
   if (req.headers['Content-Type'] === ' application/x-www-form-urlencoded') {
-    req.body = parseUrlEncodedBody(req)
-    next(req, res)
-  } else if (req.headers['Content-Type'] === ' application/json') {
-    req.body = parseJsonTypeBody(req)
-    next(req, res)
-  } else if (req.headers['Content-Type'] !== undefined && req.headers['Content-Type'].includes(' multipart/form-data')) {
-    let [parsedBody, files] = parseMultipartFormData(req)
+    let values = req.body.toString().split('&')
+    let parsedBody = {}
+    values.forEach((element) => {
+      parsedBody[element.split('=')[0]] = element.split('=')[1].replace('+', ' ')
+    })
+    req.body = parsedBody
+  }
+  next(req, res)
+}
+
+function parseJsonTypeBody (req, res, next) {
+  if (req.headers['Content-Type'] === ' application/json') {
+    let values = req.body.toString().slice(1, req.body.length - 3).split(',')
+    let parsedBody = {}
+    values.forEach((element) => {
+      parsedBody[element.split(':')[0].trim()] = element.split(':')[1].trim()
+    })
+    req.body = parsedBody
+  }
+  next(req, res)
+}
+
+function parseMultipartFormData (req, res, next) {
+  if (req.headers['Content-Type'] !== undefined && req.headers['Content-Type'].includes(' multipart/form-data')) {
+    let [parts, boundary] = getParts(req)
+    let [parsedBody, files] = parseParts(parts, boundary)
     req.body = parsedBody
     req.files = files
-    next(req, res)
-  } else next(req, res)
-}
-
-function parseUrlEncodedBody (req) {
-  let values = req.body.toString().split('&')
-  let parsedBody = {}
-  values.forEach((element) => {
-    parsedBody[element.split('=')[0]] = element.split('=')[1].replace('+', ' ')
-  })
-  return parsedBody
-}
-
-function parseJsonTypeBody (req) {
-  let values = req.body.toString().slice(1, req.body.length - 3).split(',')
-  let parsedBody = {}
-  values.forEach((element) => {
-    parsedBody[element.split(':')[0].trim()] = element.split(':')[1].trim()
-  })
-  return parsedBody
-}
-
-function parseMultipartFormData (req) {
-  let [parts, boundary] = getParts(req)
-  return parseParts(parts, boundary)
+  }
+  next(req, res)
 }
 
 function getParts (req) {
@@ -51,7 +47,7 @@ function parseParts (parts, boundary) {
       headers = headers.split('\r\n')
       if (headers[0].includes('filename')) [files, parsedBody] = parsePartWithFile(headers, files, parsedBody, body)
       else {
-      // Without Content-Type and file
+      // Without file
         let key = headers[0].slice(headers[0].indexOf('=') + 1)
         parsedBody[key.slice(1, key.length - 1)] = body
       }
@@ -71,4 +67,4 @@ function parsePartWithFile (headersArr, files, parsedBody, body) {
   return [files, parsedBody]
 }
 
-module.exports = bodyParser
+module.exports = {parseUrlEncodedBody, parseJsonTypeBody, parseMultipartFormData}
