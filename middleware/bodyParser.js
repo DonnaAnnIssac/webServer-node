@@ -14,7 +14,7 @@ const bodyParser = (req, res, next) => {
 }
 
 function parseUrlEncodedBody (req) {
-  let values = req.body.split('&')
+  let values = req.body.toString().split('&')
   let parsedBody = {}
   values.forEach((element) => {
     parsedBody[element.split('=')[0]] = element.split('=')[1].replace('+', ' ')
@@ -23,7 +23,7 @@ function parseUrlEncodedBody (req) {
 }
 
 function parseJsonTypeBody (req) {
-  let values = req.body.slice(1, req.body.length - 3).split(',')
+  let values = req.body.toString().slice(1, req.body.length - 3).split(',')
   let parsedBody = {}
   values.forEach((element) => {
     parsedBody[element.split(':')[0].trim()] = element.split(':')[1].trim()
@@ -39,7 +39,7 @@ function parseMultipartFormData (req) {
 function getParts (req) {
   let i = req.headers['Content-Type'].indexOf('=')
   let boundary = req.headers['Content-Type'].slice(i + 1)
-  return [req.body.split('--' + boundary + '\r\n'), boundary]
+  return [req.body.toString().split('--' + boundary + '\r\n'), boundary]
 }
 
 function parseParts (parts, boundary) {
@@ -49,8 +49,7 @@ function parseParts (parts, boundary) {
     if (part.length !== 0) {
       let [headers, body] = part.split('\r\n\r\n')
       headers = headers.split('\r\n')
-      body = body.slice(0, body.indexOf('--' + boundary))
-      if (headers.length > 1) files = parsePartWithFile(headers, files, body)
+      if (headers[0].includes('filename')) [files, parsedBody] = parsePartWithFile(headers, files, parsedBody, body)
       else {
       // Without Content-Type and file
         let key = headers[0].slice(headers[0].indexOf('=') + 1)
@@ -61,12 +60,15 @@ function parseParts (parts, boundary) {
   return [parsedBody, files]
 }
 
-function parsePartWithFile (headersArr, files, body) {
+function parsePartWithFile (headersArr, files, parsedBody, body) {
   let i = (headersArr[0].indexOf('name') + 5)
   let j = headersArr[0].lastIndexOf(';')
   let key = headersArr[0].slice(i, j)
+  i = headersArr[0].indexOf('filename') + 10
+  let fname = headersArr[0].slice(i, headersArr[0].lastIndexOf('"'))
   files[key.slice(1, key.length - 1)] = Buffer.from(body)
-  return files
+  parsedBody['filename'] = fname
+  return [files, parsedBody]
 }
 
 module.exports = bodyParser
