@@ -36,12 +36,23 @@ function startServer (port) {
 
 function handleDataEvent (socket) {
   let reqStr = ''
+  let bodyBuff = Buffer.from('')
+  let receivedPart = false
+  let obj = {}
   socket.on('data', (data) => {
+    if (receivedPart) bodyBuff = Buffer.concat([bodyBuff, data], bodyBuff.length + data.length)
     reqStr += data
     if (reqStr.includes('\r\n\r\n')) {
-      let [header, body] = getHeaderAndBody(reqStr)
-      let obj = parseRequest(header)
-      reqStr = handleRequest(obj, socket, body, reqStr)
+      if (!receivedPart) {
+        var [header, body] = getHeaderAndBody(reqStr)
+        obj = parseRequest(header)
+        bodyBuff = Buffer.from(body)
+        receivedPart = true
+      }
+      if (obj.Headers['Content-Length'] === undefined || parseInt(obj.Headers['Content-Length']) === bodyBuff.length) {
+        reqStr = handleRequest(obj, socket, bodyBuff)
+        receivedPart = false
+      }
     }
   })
 }
@@ -52,14 +63,11 @@ function getHeaderAndBody (reqStr) {
   return [header, body]
 }
 
-function handleRequest (obj, socket, body, reqStr) {
-  if (obj.Headers['Content-Length'] === undefined || parseInt(obj.Headers['Content-Length']) === body.length) {
-    let [request, response] = createReqAndRes(obj, socket)
-    if (request.method === 'POST') request.body = body
-    next(request, response)
-    reqStr = ''
-  }
-  return reqStr
+function handleRequest (obj, socket, body) {
+  let [request, response] = createReqAndRes(obj, socket)
+  if (request.method === 'POST') request.body = body
+  next(request, response)
+  return ''
 }
 
 function createReqAndRes (reqObj, socket) {
