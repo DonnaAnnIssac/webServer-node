@@ -2,6 +2,7 @@ const server = require('./server/tcp-server')
 const logger = require('./middleware/logger')
 const bodyParser = require('./middleware/bodyParser')
 const fs = require('fs')
+const path = require('path')
 const sessionHandler = require('./middleware/sessionHandler')
 const staticFileHandler = require('./middleware/staticFileHandler')
 
@@ -20,19 +21,19 @@ server.addHandler(staticFileHandler('./form-test'))
 server.addRoutes('POST', '/data.html', (req, res) => {
   res.body = req.body['say'] + ' ' + req.body['to']
   res.setHeaders()
-  res.setContentType('/data.html')
+  res.setContentType('/data.ht ml')
   res.send()
 })
 server.addRoutes('GET', '/home', (req, res) => {
   res.redirect('./about')
 })
 
-server.addRoutes('POST', '/submit.cgi', (req, res) => {
-  fs.appendFile('./copy.png', req.files['secret'])
-  res.body = 'File written'
-  res.setHeaders()
-  res.setContentType('.png')
-  res.send()
+server.addRoutes('POST', '/submit', (req, res) => {
+  let inStream = fs.createReadStream(path.join(__dirname, '/form-test/', req.body.filename))
+  let ext = path.extname(req.body.filename)
+  let outStream = fs.createWriteStream(path.join(__dirname, '/copy' + ext))
+  inStream.pipe(outStream)
+  res.redirect('/home')
 })
 
 server.addRoutes('GET', '/login', (req, res) => {
