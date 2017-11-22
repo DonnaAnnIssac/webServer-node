@@ -10,6 +10,11 @@ function parseUrlEncodedBody (req, res, next) {
   next(req, res)
 }
 
+function parsePlainTextBody (req, res, next) {
+  if (req.headers['Content-Type'] === ' text/plain') req.body = req.body.toString()
+  next(req, res)
+}
+
 function parseJsonTypeBody (req, res, next) {
   if (req.headers['Content-Type'] === ' application/json') {
     let values = req.body.toString().slice(1, req.body.length - 3).split(',')
@@ -67,4 +72,4 @@ function parsePartWithFile (headersArr, files, body) {
   return [files, fname]
 }
 
-module.exports = {parseUrlEncodedBody, parseJsonTypeBody, parseMultipartFormData}
+module.exports = {parseUrlEncodedBody, parseJsonTypeBody, parsePlainTextBody, parseMultipartFormData}
