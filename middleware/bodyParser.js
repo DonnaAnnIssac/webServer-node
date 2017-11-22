@@ -41,30 +41,30 @@ function getParts (req) {
 function parseParts (parts, boundary) {
   let parsedBody = {}
   let files = {}
+  let fname = ''
+  let filesArr = []
   parts.forEach((part) => {
     if (part.length !== 0) {
       let [headers, body] = part.split('\r\n\r\n')
       headers = headers.split('\r\n')
-      if (headers[0].includes('filename')) [files, parsedBody] = parsePartWithFile(headers, files, parsedBody, body)
-      else {
-      // Without file
+      if (headers[0].includes('filename')) { // Parts with file
+        [files, fname] = parsePartWithFile(headers, files, body)
+        filesArr.push(fname)
+      } else { // Parts without file
         let key = headers[0].slice(headers[0].indexOf('=') + 1)
         parsedBody[key.slice(1, key.length - 1)] = body
       }
     }
   })
+  parsedBody['filenames'] = filesArr
   return [parsedBody, files]
 }
 
-function parsePartWithFile (headersArr, files, parsedBody, body) {
-  let i = (headersArr[0].indexOf('name') + 5)
-  let j = headersArr[0].lastIndexOf(';')
-  let key = headersArr[0].slice(i, j)
-  i = headersArr[0].indexOf('filename') + 10
-  let fname = headersArr[0].slice(i, headersArr[0].lastIndexOf('"'))
+function parsePartWithFile (headersArr, files, body) {
+  let key = headersArr[0].slice((headersArr[0].indexOf('name') + 5), headersArr[0].lastIndexOf(';'))
+  let fname = headersArr[0].slice(headersArr[0].indexOf('filename') + 10, headersArr[0].lastIndexOf('"'))
   files[key.slice(1, key.length - 1)] = Buffer.from(body)
-  parsedBody['filename'] = fname
-  return [files, parsedBody]
+  return [files, fname]
 }
 
 module.exports = {parseUrlEncodedBody, parseJsonTypeBody, parseMultipartFormData}
