@@ -8,7 +8,7 @@ const staticFileHandler = require('./middleware/staticFileHandler')
 
 server.startServer(9000)
 
-server.addHandler(bodyParser)
+server.addHandler(bodyParser.parseMultipartFormData)
 server.addHandler(sessionHandler.handleSession)
 server.addHandler(logger)
 server.addHandler((req, res, next) => {
@@ -21,7 +21,7 @@ server.addHandler(staticFileHandler('./form-test'))
 server.addRoutes('POST', '/data.html', (req, res) => {
   res.body = req.body['say'] + ' ' + req.body['to']
   res.setHeaders()
-  res.setContentType('/data.ht ml')
+  res.setContentType('/data.html')
   res.send()
 })
 server.addRoutes('GET', '/home', (req, res) => {
@@ -29,10 +29,12 @@ server.addRoutes('GET', '/home', (req, res) => {
 })
 
 server.addRoutes('POST', '/submit', (req, res) => {
-  let inStream = fs.createReadStream(path.join(__dirname, '/form-test/', req.body.filename))
-  let ext = path.extname(req.body.filename)
-  let outStream = fs.createWriteStream(path.join(__dirname, '/copy' + ext))
-  inStream.pipe(outStream)
+  req.body['filenames'].forEach((file) => {
+    let inStream = fs.createReadStream(path.join(__dirname, '/form-test/', file))
+    let ext = path.extname(file)
+    let outStream = fs.createWriteStream(path.join(__dirname, '/copy' + ext))
+    inStream.pipe(outStream)
+  })
   res.redirect('/home')
 })
 
