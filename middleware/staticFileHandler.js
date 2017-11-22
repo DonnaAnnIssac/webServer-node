@@ -7,7 +7,8 @@ function staticFileHandler (directory) {
       next(req, res)
       return
     }
-    fs.readFile(resolvePath(req.url, directory), (err, data) => {
+    let url = resolvePath(req.url, directory)
+    fs.readFile(url, (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
           next(req, res)
@@ -16,7 +17,7 @@ function staticFileHandler (directory) {
       }
       res.body = data
       res.setHeaders()
-      res.setContentType(req.url)
+      res.setContentType(url)
       res.send()
     })
   }
