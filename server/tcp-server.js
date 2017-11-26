@@ -36,8 +36,7 @@ function startServer (port) {
 }
 
 function handleDataEvent (socket) {
-  let reqStr = ''
-  // let dataArray = []
+  let reqBuff = Buffer.from([])
   let bodyBuff = Buffer.from([])
   let receivedPart = false
   let obj = {}
@@ -45,34 +44,30 @@ function handleDataEvent (socket) {
     if (receivedPart) {
       bodyBuff = Buffer.concat([bodyBuff, data], bodyBuff.length + data.length)
     }
-    reqStr += data
-    if (reqStr.includes('\r\n\r\n')) {
-      console.log('Okaaaaaaaaay')
+    reqBuff = Buffer.concat([reqBuff, data], reqBuff.length + data.length)
+    if (reqBuff.includes('\r\n\r\n')) {
       if (!receivedPart) {
-        var [header, body] = getHeaderAndBody(reqStr)
-        obj = parseRequest(header)
+        let [header, body] = getHeaderAndBody(reqBuff)
+        obj = parseRequest(header.toString())
         bodyBuff = Buffer.from(body)
         receivedPart = true
       }
       if (obj.Headers['Content-Length'] === undefined || parseInt(obj.Headers['Content-Length']) === bodyBuff.length) {
-        console.log('Here we go')
-        // console.log(reqStr)
-        reqStr = handleRequest(obj, socket, bodyBuff)
+        reqBuff = handleRequest(obj, socket, bodyBuff)
         receivedPart = false
       }
     }
   })
 }
 
-function getHeaderAndBody (reqStr) {
-  let header = reqStr.slice(0, reqStr.indexOf('\r\n\r\n'))
-  let body = reqStr.slice(reqStr.indexOf('\r\n\r\n') + 4)
+function getHeaderAndBody (reqBuff) {
+  let header = reqBuff.slice(0, reqBuff.indexOf('\r\n\r\n'))
+  let body = reqBuff.slice(reqBuff.indexOf('\r\n\r\n') + 4)
   return [header, body]
 }
 
 function handleRequest (obj, socket, body) {
   let [request, response] = createReqAndRes(obj, socket)
-  console.log(Buffer.isBuffer(body))
   if (request.method === 'POST') request.body = body
   next(request, response)
   return ''

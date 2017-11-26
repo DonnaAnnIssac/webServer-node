@@ -13,7 +13,6 @@ server.addHandler(bodyParser.parseMultipartFormData)
 server.addHandler(sessionHandler.handleSession)
 server.addHandler(logger)
 server.addHandler((req, res, next) => {
-  console.log('My own handler for request: ')
   next(req, res)
 })
 server.addHandler(staticFileHandler('./test'))
@@ -32,17 +31,13 @@ server.addRoutes('GET', '/home', (req, res) => {
 
 server.addRoutes('POST', '/submit', (req, res) => {
   let keys = Object.keys(req.files)
-  console.log(keys)
   keys.forEach((key) => {
     let file = req.body['filenames'].shift()
-    console.log(Buffer.isBuffer(req.files[key]))
     let outStream = fs.createWriteStream(file)
     outStream.write(req.files[key], null, (err) => {
       if (err) throw err
     })
-    console.log("We're done here")
   })
-  console.log('Take me home')
   res.redirect('/home')
 })
 
