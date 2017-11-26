@@ -33,10 +33,11 @@ server.addRoutes('POST', '/submit', (req, res) => {
   let keys = Object.keys(req.files)
   keys.forEach((key) => {
     let file = req.body['filenames'].shift()
-    let outStream = fs.createWriteStream(file)
-    outStream.write(req.files[key], null, (err) => {
-      if (err) throw err
-    })
+    // let outStream = fs.createWriteStream(file)
+    // outStream.write(req.files[key], null, (err) => {
+    //   if (err) throw err
+    // })
+    fs.writeFile(file, req.files[key], console.log)
   })
   res.redirect('/home')
 })

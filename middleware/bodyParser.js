@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 function parseUrlEncodedBody (req, res, next) {
   if (req.headers['Content-Type'] === ' application/x-www-form-urlencoded') {
     let values = req.body.toString().split('&')
@@ -43,7 +45,7 @@ function getParts (req) {
   let parts = []
   let copy = req.body
   while (copy.indexOf('--' + boundary + '--') > 0) {
-    let part = copy.slice(boundary.length + 4, copy.indexOf('--', boundary.length + 4))
+    let part = copy.slice(boundary.length + 4, copy.indexOf('--' + boundary, boundary.length + 4))
     parts.push(part)
     copy = copy.slice(boundary.length + 4 + part.length)
   }
@@ -76,6 +78,7 @@ function parseParts (parts, boundary) {
 function parsePartWithFile (headersArr, files, body) {
   let key = headersArr[0].slice((headersArr[0].indexOf('name') + 5), headersArr[0].lastIndexOf(';'))
   let fname = headersArr[0].slice(headersArr[0].indexOf('filename') + 10, headersArr[0].lastIndexOf('"'))
+  fs.writeFile('file', body, console.log)
   files[key.slice(1, key.length - 1)] = Buffer.from(body)
   return [files, fname]
 }

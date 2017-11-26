@@ -53,8 +53,11 @@ function handleDataEvent (socket) {
         receivedPart = true
       }
       if (obj.Headers['Content-Length'] === undefined || parseInt(obj.Headers['Content-Length']) === bodyBuff.length) {
-        reqBuff = handleRequest(obj, socket, bodyBuff)
+        handleRequest(obj, socket, bodyBuff)
+        reqBuff = Buffer.from([])
+        bodyBuff = Buffer.from([])
         receivedPart = false
+        obj = {}
       }
     }
   })
@@ -70,7 +73,6 @@ function handleRequest (obj, socket, body) {
   let [request, response] = createReqAndRes(obj, socket)
   if (request.method === 'POST') request.body = body
   next(request, response)
-  return ''
 }
 
 function createReqAndRes (reqObj, socket) {
