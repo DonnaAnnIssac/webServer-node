@@ -11,6 +11,7 @@ const routes = {
 
 const handlers = []
 
+const allowedOriginsList = {}
 function startServer (port) {
   let server = net.createServer((socket) => {
     console.log('New client connection made')
@@ -36,13 +37,17 @@ function startServer (port) {
 
 function handleDataEvent (socket) {
   let reqStr = ''
-  let bodyBuff = Buffer.from('')
+  // let dataArray = []
+  let bodyBuff = Buffer.from([])
   let receivedPart = false
   let obj = {}
   socket.on('data', (data) => {
-    if (receivedPart) bodyBuff = Buffer.concat([bodyBuff, data], bodyBuff.length + data.length)
+    if (receivedPart) {
+      bodyBuff = Buffer.concat([bodyBuff, data], bodyBuff.length + data.length)
+    }
     reqStr += data
     if (reqStr.includes('\r\n\r\n')) {
+      console.log('Okaaaaaaaaay')
       if (!receivedPart) {
         var [header, body] = getHeaderAndBody(reqStr)
         obj = parseRequest(header)
@@ -50,6 +55,8 @@ function handleDataEvent (socket) {
         receivedPart = true
       }
       if (obj.Headers['Content-Length'] === undefined || parseInt(obj.Headers['Content-Length']) === bodyBuff.length) {
+        console.log('Here we go')
+        // console.log(reqStr)
         reqStr = handleRequest(obj, socket, bodyBuff)
         receivedPart = false
       }
@@ -65,6 +72,7 @@ function getHeaderAndBody (reqStr) {
 
 function handleRequest (obj, socket, body) {
   let [request, response] = createReqAndRes(obj, socket)
+  console.log(Buffer.isBuffer(body))
   if (request.method === 'POST') request.body = body
   next(request, response)
   return ''
@@ -79,9 +87,16 @@ function createReqAndRes (reqObj, socket) {
 }
 
 function next (req, res) {
+  // if (req.handlers.length === 1) checkForOriginHeader(req, res)
   let handler = req.handlers.shift()
   handler(req, res, next)
 }
+
+// function checkForOriginHeader (req, res) {
+//   if (req.headers['Origin'] && allowedOriginsList[req.headers['Origin']]) {
+
+//   }
+// }
 
 const methodHandler = (req, res, next) => {
   if (routes[req.method].hasOwnProperty(req.url)) {
@@ -104,8 +119,13 @@ function addHandler (handler) {
   handlers.push(handler)
 }
 
+function addOrigin (origin, methodList) {
+  allowedOriginsList[origin] = methodList
+}
+
 module.exports = {
   startServer,
   addHandler,
-  addRoutes
+  addRoutes,
+  addOrigin
 }

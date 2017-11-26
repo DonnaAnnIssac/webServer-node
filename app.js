@@ -8,11 +8,12 @@ const staticFileHandler = require('./middleware/staticFileHandler')
 
 server.startServer(9000)
 
+server.addHandler(bodyParser.parseUrlEncodedBody)
 server.addHandler(bodyParser.parseMultipartFormData)
 server.addHandler(sessionHandler.handleSession)
 server.addHandler(logger)
 server.addHandler((req, res, next) => {
-  console.log('My own handler for request: ' + req.body)
+  console.log('My own handler for request: ')
   next(req, res)
 })
 server.addHandler(staticFileHandler('./test'))
@@ -24,17 +25,24 @@ server.addRoutes('POST', '/data.html', (req, res) => {
   res.setContentType('/data.html')
   res.send()
 })
+
 server.addRoutes('GET', '/home', (req, res) => {
   res.redirect('./about')
 })
 
 server.addRoutes('POST', '/submit', (req, res) => {
-  req.body['filenames'].forEach((file) => {
-    let inStream = fs.createReadStream(path.join(__dirname, '/form-test/', file))
-    let ext = path.extname(file)
-    let outStream = fs.createWriteStream(path.join(__dirname, '/copy' + ext))
-    inStream.pipe(outStream)
+  let keys = Object.keys(req.files)
+  console.log(keys)
+  keys.forEach((key) => {
+    let file = req.body['filenames'].shift()
+    console.log(Buffer.isBuffer(req.files[key]))
+    let outStream = fs.createWriteStream(file)
+    outStream.write(req.files[key], null, (err) => {
+      if (err) throw err
+    })
+    console.log("We're done here")
   })
+  console.log('Take me home')
   res.redirect('/home')
 })
 
