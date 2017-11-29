@@ -1,7 +1,7 @@
 {
-  "name": "http-server",
+  "name": "http-server-lib",
   "version": "1.0.0",
-  "description": "web server built on node.js net module",
+  "description": "Basic web server built on node.js net module",
   "main": "app.js",
   "directories": {
     "test": "test"
@@ -27,7 +27,7 @@
     "sockets"
   ],
   "author": "Donna Ann Issac",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/DonnaAnnIssac/webServer-node/issues"
   },
