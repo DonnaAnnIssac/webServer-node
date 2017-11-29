@@ -2,35 +2,54 @@
 An HTTP server library written using Node.js net module 
 
 # Installation
-Before installing, download and install Node.js 
-Run the following commands on a terminal to install Node.js
+Before installing the library, [download and install Node.js and npm] (https://nodejs.org/en/download/)
+Once Node.js and npm is successfully installed, install http-server-lib from npm by using npm install command
 
-> sudo apt-get update
-
-> sudo apt-get install nodejs
-
-> sudo apt-get install npm
-
-Now that Node.js and npm is successfully installed, install http-server-lib from npm by using npm install command
-
-> npm install http-server-lib
+`$ npm install http-server-lib`
 
 Running this will create a node modules directory in your current directory (if one doesn't exist yet) and download the package in that directory.
 
 # Getting Started
-Create an app.js file and create the server instance by specifying a port number to listen to. 
 
-> const server = require('./server/tcp-server')
+Creating a server instance
 
-> server.startServer(port)
+```javascript
+const server = require('./server/tcp-server')
 
-To add routes, call the addRoutes method on the server instance and pass it a callback that describes what the server should do upon receiving a request to that route. The callback accepts two arguments - a request and response object
+server.startServer(port)
+```
 
-> server.addRoutes(method, path, callback)
+Adding routes 
 
-To use any of the middlewares, call the addHandler method on the server instance
+```javascipt
+const server = require('./server/tcp-server')
 
-> server.addHandler(logger)
+server.startServer(port)
+server.addRoutes('GET', '/', (request, response) => {
+  response.body = 'Hello World!'
+  response.send()
+})
+```
+
+Using middlewares
+
+```javascript
+const server = require('./server/tcp-server')
+const logger = require('./middlewares/logger')
+const bodyParser = require('./middlewares/bodyParser')
+
+server.startServer(port)
+
+server.addHandler(bodyParser.parseUrlEncodedBody)
+server.addHandler(logger)
+
+server.addRoutes('POST', '/data.html', (req, res) => {
+  res.body = req.body['fieldName']
+  res.setHeaders()
+  res.setContentType('/data.html')
+  res.send()
+})
+```
 
 Note: Middlewares are processed in the order that they are added
 
@@ -41,3 +60,5 @@ Static file handling
 Session handling
 
 Body parsing with support for multipart/form-data and multipart/mixed type requests
+
+Look [here] ('./app.js') for an example app that uses this library
