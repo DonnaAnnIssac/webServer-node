@@ -5,15 +5,15 @@ An HTTP server library written using Node.js net module
 Before installing, download and install Node.js 
 Run the following commands on a terminal to install Node.js
 
-sudo apt-get update
+> sudo apt-get update
 
-sudo apt-get install nodejs
+> sudo apt-get install nodejs
 
-sudo apt-get install npm
+> sudo apt-get install npm
 
 Now that Node.js and npm is successfully installed, install http-server-lib from npm by using npm install command
 
-npm install http-server-lib
+> npm install http-server-lib
 
 Running this will create a node modules directory in your current directory (if one doesn't exist yet) and download the package in that directory.
 
