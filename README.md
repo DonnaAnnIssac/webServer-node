@@ -61,4 +61,8 @@ Session handling
 
 Body parsing with support for multipart/form-data and multipart/mixed type requests
 
-Look [here] ('./app.js') for an example app that uses this library
+Look [here] ('app.js') for an example app that uses this library
+
+# License
+
+[MIT] (LICENSE)
