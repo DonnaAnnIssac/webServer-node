@@ -21,6 +21,7 @@ Running this will create a node modules directory in your current directory (if 
 Create an app.js file and create the server instance by specifying a port number to listen to. 
 
 > const server = require('./server/tcp-server')
+
 > server.startServer(port)
 
 To add routes, call the addRoutes method on the server instance and pass it a callback that describes what the server should do upon receiving a request to that route. The callback accepts two arguments - a request and response object
