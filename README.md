@@ -2,7 +2,7 @@
 An HTTP server library written using Node.js net module 
 
 # Installation
-Before installing the library, [download and install Node.js and npm] (https://nodejs.org/en/download/)
+Before installing the library, [download and install Node.js and npm](https://nodejs.org/en/download/)
 Once Node.js and npm is successfully installed, install http-server-lib from npm by using npm install command
 
 `$ npm install http-server-lib`
@@ -65,4 +65,4 @@ Look [here] ('app.js') for an example app that uses this library
 
 # License
 
-[MIT] (LICENSE)
+[MIT](LICENSE)
